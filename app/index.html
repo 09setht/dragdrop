@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.15/angular.min.js"></script>
+</head>
+<body>
+<div ng-app
+     ng-init="people=[{name: 'User A', city: 'boston'},{name: 'J User J', city: 'Atlanta'},{name: 'C User', city: 'Inman'}]">
+    <div>{{1+2}}=3!</div>
+    <div>{{"Hello World"}}</div>
+
+    <div ng-model="people"  data-drop="accept: '', onDrop: ''"  style="padding: 5px;"><!--ondragenter="dragEnter(event)" ondragover="drop(event)"-->
+        <div class="person"
+                draggable="true" data-drag="handle: '', container: 'people'"
+        @*ondragover="handleEvent(event)"*@
+        @*ondragleave="dragLeave(event)"*@
+        @*ondragend="dragEnd(event)"*@
+        @*ondrag="handleEvent(event)"*@
+        @*ondragenter="dragEnter(event)"*@
+        @*ondragstart="dragStart(event)"*@
+        @*ondrop="drop(event)"*@
+
+        ng-repeat="person in people"
+        >
+        {{person.name}}
+    </div>
+</div>
+</div>
+</body>
+<script src="dist/dragdrop.js">
+</script>
+</html>
+
