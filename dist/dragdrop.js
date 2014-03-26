@@ -2,7 +2,7 @@
  * Created by tolles on 3/25/14.
  */
 
-!function (window) {
+!function(window) {
 	if (typeof module !== 'undefined' && module.exports) {
 		module.exports = DragDrop;
 	}
@@ -14,7 +14,7 @@
 	}
 
 	function handleEvent(event) {
-		args = arguments;
+		var args = arguments;
 		this.last = this.last || {};
 		var last = this.last[event.type] || {};
 //        if (last.offsetX !== event.offsetX || last.offsetY !== event.offsetY)
@@ -33,22 +33,22 @@
 	function DragDrop(window) {
 		var self = this;
 
-		self._blank;
-		self._item;
+		self._blank = null;
+		self._item = null;
 
-		self._getBlank = function () {
+		self._getBlank = function() {
 			if (!self._blank) {
 				self._blank = self._item.cloneNode(true);
 				self._blank.style.opacity = 0;
+				self._blank.classList.add('blank');
 			}
 			return self._blank;
 		};
 
-		self._dragStart = function (event) {
-			console.log('start');
+		self._dragStart = function(event) {
 			self._item = event.target;
 			var parent = self._item.parentElement;
-			setTimeout(function () {
+			setTimeout(function() {
 				parent.insertBefore(self._getBlank(), self._item);
 //            self._item.style.visibility = 'hidden';
 				self._item.style.display = 'none';
@@ -56,17 +56,17 @@
 			event.target = self._item;
 		};
 
-		self._dragEnd = function (event) {
-			console.log('end');
-			setTimeout(function () {
-				self.getBlank().remove();
+		self._dragEnd = function(event) {
+			setTimeout(function() {
+				self._getBlank().remove();
+				self._blank = null;
 //            self._item.style.visibility = null;
 				self._item.style.display = null;
-				self._item = {};
+				self._item = null;
 			});
 		};
 
-		self._dragOver = function (event) {
+		self._dragOver = function(event) {
 			var dataDrop = event.target.dataset.drop;
 
 			dataDrop = dataDrop || (event.target.parentElement && event.target.parentElement.dataset.drop);
@@ -81,10 +81,10 @@
 			}
 		};
 
-		this._dragEnter = function (event) {
+		this._dragEnter = function(event) {
 			var dropData, isSibling, parent;
 			if (dropData = event.target.dataset.drop) {
-				isSibling = false
+				isSibling = false;
 				parent = event.target;
 			}
 			else if (dropData =
@@ -98,26 +98,26 @@
 			}
 
 			if (!isSibling) {
-				setTimeout(function () {
+				setTimeout(function() {
 					parent.appendChild(self._getBlank());
 				});
 			}
 			else {
 				var sibling = event.target;
-				setTimeout(function () {
+				setTimeout(function() {
 					parent.insertBefore(self._getBlank(), sibling);
 				});
 			}
 		};
 
-		self._dragLeave = function (event) {
+		self._dragLeave = function(event) {
 
 		};
 
-		this._drop = function (event) {
+		this._drop = function(event) {
 			var dropData, isSibling, parent;
 			if (dropData = event.target.dataset.drop) {
-				isSibling = false
+				isSibling = false;
 				parent = event.target;
 			}
 			else if (dropData =
@@ -130,38 +130,50 @@
 				return;
 			}
 
-			var dropData = self.parseOptions(dropData);
+			console.log(event.target.id);
+
+			dropData = self.parseOptions(dropData);
 			dropData = dropData && dropData.data;
 			var dragData = self._item.dataset.drag && self.parseOptions(self._item.dataset.drag);
 			dragData = dragData && dragData.data;
 
+			var item = self._item;
+			var index;
+			var blankIndex = Array.prototype.indexOf.call(parent.children, self._getBlank());
+			var currIndex = Array.prototype.indexOf.call(parent.children, self._item);
+			if (currIndex < blankIndex && self._getBlank().parentElement === self._item.parentElement){
+				index = blankIndex -1;
+			}
+			else {
+				index = blankIndex;
+			}
+
 			if (!isSibling) {
 				parent = event.target;
-				setTimeout(function () {
+				setTimeout(function() {
 					parent.appendChild(self._item);
-					self.sendEvent(event,{drop:dropData,drag:dragData});
+					self.sendEvent(event, {drop: dropData, drag: dragData, index: index});
 				});
 			}
 			else {
 				parent = event.target.parentElement;
 				var sibling = event.target;
-				setTimeout(function () {
-					parent.insertBefore(self._item, sibling);
-					self.sendEvent(event,{drop:dropData,drag:dragData});
+				setTimeout(function() {
+					parent.insertBefore(item, sibling);
+					self.sendEvent(event, {drop: dropData, drag: dragData, index: index});
 				});
 			}
-			event.preventDefault();
 		};
 
-		self.sendEvent = function (name, event) {
-
+		self.sendEvent = function(event, eventData) {
+			console.dir(eventData);
+//			console.log('index: ' + eventData.index);
 		};
 
 		function setListeners(window) {
 			window.document.ondragstart = self._dragStart;
 			window.document.ondragend = self._dragEnd;
 			window.document.ondragover = self._dragOver;
-			//	window.document.addEventListener('dragover',handleEvent);
 			window.document.ondragenter = self._dragEnter;
 			window.document.ondrop = self._drop;
 		}
@@ -169,7 +181,12 @@
 		setListeners(window);
 	}
 
-	DragDrop.prototype.parseOptions = function (opts) {
-		return Function('return {' + opts + '}')();
+	DragDrop.prototype.parseOptions = function(opts) {
+		try {
+			return Function('return {' + opts + '}')();
+		}
+		catch (e) {
+			throw Error("could not parse options: " + opts);
+		}
 	};
 }(typeof window !== 'undefined' && window);

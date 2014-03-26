@@ -6,22 +6,15 @@
 </head>
 <body>
 <div ng-app
-     ng-init="people=[{name: 'User A', city: 'boston'},{name: 'J User J', city: 'Atlanta'},{name: 'C User', city: 'Inman'}]">
+     ng-init="people=[{name: 'User A', city: 'boston'},{name: 'J User J', city: 'Atlanta'},{name: 'C User', city: 'Inman'},{name: 'D User', city: 'Inman'}]">
     <div>{{1+2}}=3!</div>
     <div>{{"Hello World"}}</div>
 
-    <div ng-model="people"  data-drop="accept: '', onDrop: ''"  style="padding: 5px;"><!--ondragenter="dragEnter(event)" ondragover="drop(event)"-->
-        <div class="person"
-                draggable="true" data-drag="handle: '', container: 'people'"
-        @*ondragover="handleEvent(event)"*@
-        @*ondragleave="dragLeave(event)"*@
-        @*ondragend="dragEnd(event)"*@
-        @*ondrag="handleEvent(event)"*@
-        @*ondragenter="dragEnter(event)"*@
-        @*ondragstart="dragStart(event)"*@
-        @*ondrop="drop(event)"*@
-
-        ng-repeat="person in people"
+    <div id="people" ng-model="people"  data-drop="accept: '', data: {mydropdata:true}"
+         style="padding: 5px;border: 1px;border-color: black;border-style: solid;width: 100px"><!--ondragenter="dragEnter(event)" ondragover="drop(event)"-->
+        <div class="person" ng-class="person.name"
+            draggable="true" data-drag="handle: '', container: 'people', data: {mydragdata:'{{person.name}}'}"
+            ng-repeat="person in people"
         >
         {{person.name}}
     </div>
