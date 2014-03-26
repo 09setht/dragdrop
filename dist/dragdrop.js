@@ -2,7 +2,7 @@
  * Created by tolles on 3/25/14.
  */
 
-!function(window) {
+!function (window) {
 	if (typeof module !== 'undefined' && module.exports) {
 		module.exports = DragDrop;
 	}
@@ -36,7 +36,7 @@
 		self._blank;
 		self._item;
 
-		self._getBlank = function() {
+		self._getBlank = function () {
 			if (!self._blank) {
 				self._blank = self._item.cloneNode(true);
 				self._blank.style.opacity = 0;
@@ -44,11 +44,11 @@
 			return self._blank;
 		};
 
-		self._dragStart = function(event) {
+		self._dragStart = function (event) {
 			console.log('start');
 			self._item = event.target;
 			var parent = self._item.parentElement;
-			setTimeout(function() {
+			setTimeout(function () {
 				parent.insertBefore(self._getBlank(), self._item);
 //            self._item.style.visibility = 'hidden';
 				self._item.style.display = 'none';
@@ -56,9 +56,9 @@
 			event.target = self._item;
 		};
 
-		self._dragEnd = function(event) {
+		self._dragEnd = function (event) {
 			console.log('end');
-			setTimeout(function() {
+			setTimeout(function () {
 				self.getBlank().remove();
 //            self._item.style.visibility = null;
 				self._item.style.display = null;
@@ -66,13 +66,13 @@
 			});
 		};
 
-		self._dragOver = function(event) {
+		self._dragOver = function (event) {
 			var dataDrop = event.target.dataset.drop;
 
 			dataDrop = dataDrop || (event.target.parentElement && event.target.parentElement.dataset.drop);
 
 			if (dataDrop) {
-				dataDrop = Function('return {' + dataDrop + '}')();
+				dataDrop = self.parseOptions(dataDrop);
 				var canDrop = !dataDrop.accepts || self._item.className.indexOf(dataDrop.accepts) !== -1;
 
 				if (canDrop) {
@@ -81,7 +81,7 @@
 			}
 		};
 
-		this._dragEnter = function(event) {
+		this._dragEnter = function (event) {
 			var dropData, isSibling, parent;
 			if (dropData = event.target.dataset.drop) {
 				isSibling = false
@@ -97,45 +97,63 @@
 				return event.preventDefault();
 			}
 
-			console.dir(dropData);
 			if (!isSibling) {
-				setTimeout(function() {
+				setTimeout(function () {
 					parent.appendChild(self._getBlank());
 				});
 			}
 			else {
 				var sibling = event.target;
-				setTimeout(function() {
+				setTimeout(function () {
 					parent.insertBefore(self._getBlank(), sibling);
 				});
 			}
 		};
 
-		self._dragLeave = function(event) {
+		self._dragLeave = function (event) {
 
 		};
 
-		this._drop = function(event) {
-			var parent;
-			if (event.target === self._item.parentElement) {
+		this._drop = function (event) {
+			var dropData, isSibling, parent;
+			if (dropData = event.target.dataset.drop) {
+				isSibling = false
 				parent = event.target;
-				setTimeout(function() {
+			}
+			else if (dropData =
+				(event.target.parentElement
+					&& event.target.parentElement.dataset.drop)) {
+				isSibling = true;
+				parent = event.target.parentElement;
+			}
+			else {
+				return;
+			}
+
+			var dropData = self.parseOptions(dropData);
+			dropData = dropData && dropData.data;
+			var dragData = self._item.dataset.drag && self.parseOptions(self._item.dataset.drag);
+			dragData = dragData && dragData.data;
+
+			if (!isSibling) {
+				parent = event.target;
+				setTimeout(function () {
 					parent.appendChild(self._item);
-					self.sendEvent();
+					self.sendEvent(event,{drop:dropData,drag:dragData});
 				});
 			}
 			else {
 				parent = event.target.parentElement;
 				var sibling = event.target;
-				setTimeout(function() {
+				setTimeout(function () {
 					parent.insertBefore(self._item, sibling);
-					self.sendEvent();
+					self.sendEvent(event,{drop:dropData,drag:dragData});
 				});
 			}
 			event.preventDefault();
 		};
 
-		self.sendEvent = function(name,event){
+		self.sendEvent = function (name, event) {
 
 		};
 
@@ -150,4 +168,8 @@
 
 		setListeners(window);
 	}
+
+	DragDrop.prototype.parseOptions = function (opts) {
+		return Function('return {' + opts + '}')();
+	};
 }(typeof window !== 'undefined' && window);
